@@ -37,6 +37,10 @@
 # ### foreman_log
 # Sets the foreman log path. Defaults to *shared/log*
 
+# ### foreman_application_service_command
+# Choose which command to use to start, stop, and restart foreman.
+#   ex. set_default :foreman_application_service_command, 'systemctl'
+
 set_default :foreman_app,  lambda { application }
 set_default :foreman_user, lambda { user }
 set_default :foreman_log,  lambda { "#{deploy_to!}/#{shared_path}/log" }
@@ -44,6 +48,7 @@ set_default :foreman_sudo, true
 set_default :foreman_format, 'upstart'
 set_default :foreman_location, '/etc/init'
 set_default :foreman_procfile, 'Procfile'
+set_default :foreman_application_service_command, ''
 
 namespace :foreman do
   desc 'Export the Procfile to Ubuntu upstart scripts'
@@ -61,7 +66,7 @@ namespace :foreman do
   task :start do
     queue %{
       echo "-----> Starting #{foreman_app} services"
-      #{echo_cmd %[sudo start #{foreman_app}]}
+      #{echo_cmd %[sudo #{foreman_application_service_command} start #{foreman_app}]}
     }
   end
 
@@ -69,7 +74,7 @@ namespace :foreman do
   task :stop do
     queue %{
       echo "-----> Stopping #{foreman_app} services"
-      #{echo_cmd %[sudo stop #{foreman_app}]}
+      #{echo_cmd %[sudo #{foreman_application_service_command} stop #{foreman_app}]}
     }
   end
 
@@ -77,7 +82,7 @@ namespace :foreman do
   task :restart do
     queue %{
       echo "-----> Restarting #{foreman_app} services"
-      #{echo_cmd %[sudo start #{foreman_app} || sudo restart #{foreman_app}]}
+      #{echo_cmd %[sudo #{foreman_application_service_command} start #{foreman_app} || sudo #{foreman_application_service_command} restart #{foreman_app}]}
     }
   end
 end
